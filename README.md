@@ -1,5 +1,5 @@
 # Uncertainty-Aware Vision Transformers for Medical Image Segmentation
-The codes for the work Uncertainty-Aware Swin-Unet. 
+The codes is publicly available on Github [Python-Uncertainty_Aware_Vision_Transformer](https://github.com/BXYMartin/Python-Uncertainty_Aware_Vision_Transformer). 
 
 Code from the repository is implemented based on the original implementation of [Swin-Unet](https://github.com/HuCaoFighting/Swin-Unet). The training and testing framework is inherited. Main contribution of this work includes codes for the sampling, uncertainty-aware skip-connections module design, performance evaluation, uncertainty visualization, LIDC dataset definition & preprocessing, model structural changes, out-of-distribution samples creation & prediction and model computational complexity analysis.
 
