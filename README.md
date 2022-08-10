@@ -1,7 +1,7 @@
 # Uncertainty-Aware Vision Transformers for Medical Image Segmentation
 The codes for the work Uncertainty-Aware Swin-Unet. 
 
-Code from the repository is implemented based on the original implementation of [Swin-Unet](https://github.com/HuCaoFighting/Swin-Unet). Only the training and testing framework is inherited from this work. Main contribution of this work includes codes for the sampling, uncertainty-aware skip-connections module design, performance evaluation, uncertainty visualization, dataset definition and preprocessing, model structural changes, out-of-distribution detection and model computational complexity analysis.
+Code from the repository is implemented based on the original implementation of [Swin-Unet](https://github.com/HuCaoFighting/Swin-Unet). The training and testing framework is inherited. Main contribution of this work includes codes for the sampling, uncertainty-aware skip-connections module design, performance evaluation, uncertainty visualization, LIDC dataset definition & preprocessing, model structural changes, out-of-distribution samples creation & prediction and model computational complexity analysis.
 
 ## 1. Download pre-trained swin transformer model (Swin-T)
 * [Get pre-trained model in this link] (https://drive.google.com/drive/folders/1UC3XOoezeum0uck4KBVGa8osahs6rKUY?usp=sharing): Put pretrained Swin-T into folder "pretrained_ckpt/"
@@ -18,7 +18,7 @@ For both datasets, we provide the pre-computed index file for train/test/eval sp
 
 - Please prepare an environment with python=3.7, and then use the command "pip install -r requirements.txt" for the dependencies.
 
-## 4. Train/Test
+## 4. Usage
 
 - Run the train script on synapse dataset. The batch size we used is 24. If you do not have enough GPU memory, the bacth size can be reduced to 12 or 6 to save memory.
 
@@ -39,6 +39,34 @@ python test.py --dataset Synapse --cfg configs/swin_tiny_patch4_window7_224_lite
 python sample.py --dataset Synapse --cfg configs/swin_tiny_patch4_window7_224_lite.yaml --is_saveni --volume_path your DATA_DIR --output_dir your OUT_DIR --max_epoch 150 --base_lr 0.05 --img_size 224 --batch_size 24
 ```
 
+- Out-of-distribution: run with random patches
+```bash
+python patch.py --dataset Synapse --cfg configs/swin_tiny_patch4_window7_224_lite.yaml --is_saveni --volume_path your DATA_DIR --output_dir your OUT_DIR --max_epoch 150 --base_lr 0.05 --img_size 224 --batch_size 24
+```
+
+
+- Out-of-distribution: run with gaussian blurs
+```bash
+python ood.py --dataset Synapse --cfg configs/swin_tiny_patch4_window7_224_lite.yaml --is_saveni --volume_path your DATA_DIR --output_dir your OUT_DIR --max_epoch 150 --base_lr 0.05 --img_size 224 --batch_size 24
+```
+
+
+- Out-of-distribution: run with real tumors
+```bash
+python tumor.py --dataset Synapse --cfg configs/swin_tiny_patch4_window7_224_lite.yaml --is_saveni --volume_path your DATA_DIR --output_dir your OUT_DIR --max_epoch 150 --base_lr 0.05 --img_size 224 --batch_size 24
+```
+
+- Uncertainty visualization
+
+```bash
+python visualize.py --dataset Synapse --cfg configs/swin_tiny_patch4_window7_224_lite.yaml --is_saveni --volume_path your DATA_DIR --output_dir your OUT_DIR --max_epoch 150 --base_lr 0.05 --img_size 224 --batch_size 24
+```
+
+- Computational complexity
+
+```bash
+python flops.py --dataset Synapse --cfg configs/swin_tiny_patch4_window7_224_lite.yaml --is_saveni --volume_path your DATA_DIR --output_dir your OUT_DIR --max_epoch 150 --base_lr 0.05 --img_size 224 --batch_size 24
+```
 
 ## References
 * [Hierarchical Probabilistic Unet](https://github.com/deepmind/deepmind-research/tree/master/hierarchical_probabilistic_unet)
