@@ -8,6 +8,21 @@ from scipy import ndimage
 from scipy.ndimage.interpolation import zoom
 from torch.utils.data import Dataset
 
+def crop_center(image_path, crop_size):
+    # Load the image
+    img = plt.imread(image_path)
+
+    # Get the dimensions of the image
+    height, width = img.shape
+
+    # Define the starting points of the crop
+    start_y = height // 2 - (crop_size[0] // 2)
+    start_x = width // 2 - (crop_size[1] // 2)
+
+    # Crop the image
+    cropped_img = img[start_y:start_y+crop_size[0], start_x:start_x+crop_size[1]]
+
+    return cropped_img
 
 def random_rot_flip(image, label):
     k = np.random.randint(0, 4)
@@ -92,26 +107,42 @@ class Synapse_dataset(Dataset):
         return sample
 
 class LIDC_dataset(Dataset):
-    def __init__(self, base_dir, list_dir, split, transform=None):
+    def __init__(self, base_dir, list_dir, split, transform=None, multiple=True):
         self.transform = transform  # using transform in torch!
         self.split = split
+        self.multiple = multiple
         self.sample_list = open(os.path.join(list_dir, self.split+'.txt')).readlines()
         self.data_dir = base_dir
 
     def __len__(self):
-        return len(self.sample_list) * 4
+        if self.multiple:
+            return len(self.sample_list) * 4
+        return len(self.sample_list)
 
     def __getitem__(self, idx):
-        slice_name = self.sample_list[int(idx / 4)].strip('\n')
+        if self.multiple:
+            slice_name = self.sample_list[int(idx / 4)].strip('\n')
+            image_path = os.path.join(self.data_dir, self.split, "images", slice_name+'.png')
+            label_path = os.path.join(self.data_dir, self.split, "gt", slice_name+f'_l{int(idx % 4)}.png')
+            crop_size = (128, 128)
+            image = crop_center(image_path, crop_size)
+            label = crop_center(label_path, crop_size)
+            sample = {'image': np.array(image), 'label': np.array(label)}
+            if self.transform:
+                sample = self.transform(sample)
+            sample['case_name'] = self.sample_list[int(idx / 4)].strip('\n')
+            return sample
+        slice_name = self.sample_list[int(idx)].strip('\n')
         image_path = os.path.join(self.data_dir, self.split, "images", slice_name+'.png')
-        label_path = os.path.join(self.data_dir, self.split, "gt", slice_name+f'_l{int(idx % 4)}.png')
-
-        image = plt.imread(image_path)
-        label = plt.imread(label_path)
+        label_path = os.path.join(self.data_dir, self.split, "gt", slice_name+f'_l0.png')
+        crop_size = (128, 128)
+        image = crop_center(image_path, crop_size)
+        label = crop_center(label_path, crop_size)
         sample = {'image': np.array(image), 'label': np.array(label)}
         if self.transform:
             sample = self.transform(sample)
-        sample['case_name'] = self.sample_list[int(idx / 4)].strip('\n')
+        sample['case_name'] = self.sample_list[int(idx)].strip('\n')
         return sample
+
 
 

@@ -31,7 +31,7 @@ def trainer_lidc(args, model, snapshot_path):
     # max_iterations = args.max_iterations
     db_train = LIDC_dataset(base_dir=args.root_path, list_dir=args.list_dir, split="train",
                                transform=transforms.Compose(
-                                   [StaticGenerator(output_size=[args.img_size, args.img_size])]))
+                                   [StaticGenerator(output_size=[args.img_size, args.img_size])]), multiple=args.multiple_annotator)
     print("The length of train set is: {}".format(len(db_train)))
 
     def worker_init_fn(worker_id):
@@ -68,7 +68,7 @@ def trainer_lidc(args, model, snapshot_path):
                 kl_levels.append(kl_level)
             loss_kl = torch.sum(torch.stack(kl_levels))
             # loss = 0.4 * loss_ce + 0.6 * loss_dice
-            loss = 0.6 * loss_ce + 0.4 * loss_dice + 1e-3 * loss_kl
+            loss = 0.6 * loss_ce + 0.4 * loss_dice + 1e-5 * loss_kl
             optimizer.zero_grad()
             loss.backward()
             # nn.utils.clip_grad_norm(model.parameters(), 1)
@@ -87,17 +87,17 @@ def trainer_lidc(args, model, snapshot_path):
             logging.info('iteration %d : loss : %f, loss_ce: %f, loss_de: %f, loss_kl: %f' %
                          (iter_num, loss.item(), loss_ce.item(), loss_dice.item(), loss_kl.item()))
 
-            if iter_num % 20 == 0:
-                image = image_batch[1, 0:1, :, :]
-                image = (image - image.min()) / (image.max() - image.min())
-                writer.add_image('train/Image', image, iter_num)
-                outputs = torch.argmax(torch.softmax(outputs, dim=1), dim=1, keepdim=True)
-                writer.add_image('train/Prediction', outputs[1, ...] * 50, iter_num)
-                labs = label_batch[1, ...].unsqueeze(0) * 50
-                writer.add_image('train/GroundTruth', labs, iter_num)
+        if True:
+            image = image_batch[1, 0:1, :, :]
+            image = (image - image.min()) / (image.max() - image.min())
+            writer.add_image('train/Image', image, epoch_num)
+            outputs = torch.argmax(torch.softmax(outputs, dim=1), dim=1, keepdim=True)
+            writer.add_image('train/Prediction', outputs[1, ...] * 50, epoch_num)
+            labs = label_batch[1, ...].unsqueeze(0) * 50
+            writer.add_image('train/GroundTruth', labs, epoch_num)
 
-        save_interval = 50  # int(max_epoch/6)
-        if epoch_num > int(max_epoch / 2) and (epoch_num + 1) % save_interval == 0:
+        save_interval = 2  # int(max_epoch/6)
+        if (epoch_num + 1) % save_interval == 0:
             save_mode_path = os.path.join(snapshot_path, 'epoch_' + str(epoch_num) + '.pth')
             torch.save(model.state_dict(), save_mode_path)
             logging.info("save model to {}".format(save_mode_path))

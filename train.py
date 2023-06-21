@@ -30,6 +30,7 @@ parser.add_argument('--deterministic', type=int,  default=1,
                     help='whether use deterministic training')
 parser.add_argument('--base_lr', type=float,  default=0.05,
                     help='segmentation network learning rate')
+parser.add_argument('--multiple_annotator', type=bool, default=True, help='use multiple annotators')
 parser.add_argument('--img_size', type=int,
                     default=224, help='input patch size of network input')
 parser.add_argument('--seed', type=int,
@@ -89,8 +90,6 @@ if __name__ == "__main__":
         },
     }
 
-    if args.batch_size != 24 and args.batch_size % 6 == 0:
-        args.base_lr *= args.batch_size / 24
     args.num_classes = dataset_config[dataset_name]['num_classes']
     args.root_path = dataset_config[dataset_name]['root_path']
     args.list_dir = dataset_config[dataset_name]['list_dir']
